@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 
 namespace form.Pages;
 
-public class IndexModel : PageModel
+public class RegistroModel : PageModel
 {
     [BindProperty]
     public LoginInput Input { get; set; } = new LoginInput();
@@ -34,5 +34,14 @@ public class IndexModel : PageModel
         [DataType(DataType.Password)]
         [RegularExpression(@"^(?=.{8,})(?=.*\d)(?=.*[A-Z])(?=.*[a-z]).*$", ErrorMessage = "La contraseña debe tener mínimo 8 caracteres, incluir mayúscula, minúscula y número")]
         public string Password { get; set; } = string.Empty;
+        [Required(ErrorMessage = "Nombre requerido")]
+        [RegularExpression(@"^[A-Za-zÁÉÍÓÚÜÑáéíóúüñ'´`-]{2,}(?:\s+[A-Za-zÁÉÍÓÚÜÑáéíóúüñ'´`-]+)*$",
+            ErrorMessage = "El nombre contiene caracteres no permitidos o es demasiado corto")]
+        public string Name { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Apellido requerido")]
+        [RegularExpression(@"^[A-Za-zÁÉÍÓÚÜÑáéíóúüñ'´`-]{2,}(?:\s+[A-Za-zÁÉÍÓÚÜÑáéíóúüñ'´`-]+)*$",
+            ErrorMessage = "El nombre contiene caracteres no permitidos o es demasiado corto")]
+        public string Apellido { get; set; } = string.Empty;
     }
 }

@@ -18,9 +18,12 @@ namespace form.Pages
         [BindProperty]
         public IFormFile? Archivo { get; set; }
 
-        public void OnGet()
-        {
+        public string? TipoFormulario { get; set; }
 
+        public void OnGet(string? tipo)
+        {
+            TipoFormulario = tipo;
+            // usar TipoFormulario para adaptar la UI o cargar plantilla
         }
 
         public async Task<IActionResult> OnPostUploadAsync()
@@ -62,6 +65,8 @@ namespace form.Pages
             TempData["UploadMessage"] = "Archivo subido correctamente.";
             TempData["UploadedFile"] = safeFileName; // guarda el nombre
             TempData["ShowUploadModal"] = true;
+
+            //se redirige al third al dar en continuar con el modal
             return Page();
         }
     }

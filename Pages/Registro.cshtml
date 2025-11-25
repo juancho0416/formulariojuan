@@ -1,10 +1,8 @@
-﻿@page
-@model IndexModel
+@page
+@model RegistroModel
 @{
-    ViewData["Title"] = "Login";
+    ViewData["Title"] = "Registro";
 }
-
-
 <ol class="breadcrumb">
     <li class="breadcrumb-item"><a href="/First"><i class="icon icon-home"></i></a></li>
     <li class="breadcrumb-item"><a href="/index">Inicio</a></li>
@@ -13,12 +11,22 @@
 
 <div class="row justify-content-center">
     <div class="col-md-6">
-        <h1>Login</h1>
+        <h1>Registro</h1>
         <hr class="red">
         </hr>
         <form method="post" novalidate>
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
 
+            <div class="mb-3">
+                <label asp-for="Input.Name" class="form-label">Nombre</label>
+                <input asp-for="Input.Name" class="form-control" type="text" placeholder="Ingrese su nombre" />
+                <span asp-validation-for="Input.Name" class="text-danger"></span>
+            </div>
+            <div class="mb-3">
+                <label asp-for="Input.Apellido" class="form-label">Apellido</label>
+                <input asp-for="Input.Apellido" class="form-control" type="text" placeholder="Ingrese su apellido" />
+                <span asp-validation-for="Input.Apellido" class="text-danger"></span>
+            </div>
             <div class="mb-3">
                 <label asp-for="Input.Email" class="form-label">Email</label>
                 <input asp-for="Input.Email" class="form-control" type="text" placeholder="Ingrese su correo" />
@@ -32,7 +40,7 @@
                 <span asp-validation-for="Input.Password" class="text-danger"></span>
             </div>
 
-            <button type="submit" class="btn btn-primary pull-right">Entrar</button>
+            <button type="submit" class="btn btn-primary pull-right">Registrarse</button>
         </form>
         @if (!ModelState.IsValid)
         {

@@ -1,6 +1,17 @@
 @page
 @model form.Pages.TwoNineModel
-
+@{
+    ViewData["Title"] = "Formulario";
+}
+<ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="/Index"><i class="icon icon-home"></i></a></li>
+    <li class="breadcrumb-item"><a href="/Index">Login</a></li>
+    <li class="breadcrumb-item"><a href="/ZeroSecond">Seleccion de fecha</a></li>
+    <li class="breadcrumb-item"><a href="/Second">Datos</a></li>
+    <li class="breadcrumb-item"><a href="/TwoFive">Permisos</a></li>
+    <li class="breadcrumb-item"><a href="/ZeroThird">Leyes</a></li>
+    <li class="breadcrumb-item active" aria-current="page"><a href="/TwoNine">Subir Documento</a></li>
+</ol>
 <h2>Subir documento</h2>
 
 <form method="post" enctype="multipart/form-data" asp-page-handler="Upload" id="uploadForm" novalidate>
@@ -11,21 +22,23 @@
     </div>
 
     <button type="submit" class="btn btn-primary">Subir</button>
+    <a asp-page="/TwoFive" class="btn btn-secondary ms-2">Volver</a>
+
 </form>
 
-<!-- Modal -->
-<div class="modal fade" id="uploadModal" tabindex="-1" aria-labelledby="uploadModalLabel" aria-hidden="true">
+<!-- Modal notificación  subida -->
+<div class="modal fade" id="uploadModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="uploadModalLabel">Resultado</h5>
+                <h5 class="modal-title">Subida de archivo</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
             </div>
-            <div class="modal-body" id="uploadModalBody">
-                @Html.Raw(TempData["UploadMessage"] ?? "")
+            <div class="modal-body">
+                <p>@(TempData["UploadMessage"] ?? "")</p>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Aceptar</button>
             </div>
         </div>
     </div>
@@ -34,48 +47,22 @@
 @section Scripts {
     <script>
         (function () {
-            const allowed = ['.json', '.xml', '.pdf'];
-            const fileInput = document.getElementById('archivo');
-            const form = document.getElementById('uploadForm');
+            // Serializa valores desde TempData de forma segura para JS
+            var showUpload = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(TempData["ShowUploadModal"] != null && (TempData["ShowUploadModal"] is bool b && b)));
+            if (showUpload) {
+                var uploadedFile = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(TempData["UploadedFile"] ?? ""));
+                var modalEl = document.getElementById('uploadModal');
+                if (!modalEl) return;
+                var bsModal = new bootstrap.Modal(modalEl);
+                bsModal.show();
 
-            form.addEventListener('submit', function (e) {
-                const f = fileInput.files[0];
-                if (!f) {
-                    e.preventDefault();
-                    showModal('Seleccione un archivo.');
-                    return;
-                }
-                const ext = '.' + f.name.split('.').pop().toLowerCase();
-                if (!allowed.includes(ext)) {
-                    e.preventDefault();
-                    showModal('Formato no permitido. Use .json, .xml o .pdf');
-                    return;
-                }
-                // tamaño máximo del archivo 10MB
-                const maxSize = 10 * 1024 * 1024;
-                if (f.size > maxSize) {
-                    e.preventDefault();
-                    showModal('Archivo demasiado grande. Máximo 10 MB.');
-                    return;
-                }
-            });
-
-            function showModal(msg) {
-                document.getElementById('uploadModalBody').textContent = msg;
-                var m = new bootstrap.Modal(document.getElementById('uploadModal'));
-                m.show();
+                modalEl.addEventListener('hidden.bs.modal', function () {
+                    if (uploadedFile && uploadedFile.length > 0) {
+                        var url = '@Url.Page("/Third")' + '?uploadedFile=' + encodeURIComponent(uploadedFile);
+                        window.location.href = url;
+                    }
+                }, { once: true });
             }
-
-
-            @if (TempData["ShowUploadModal"] != null && (bool)TempData["ShowUploadModal"])
-                {
-                    <text>
-                        document.addEventListener('DOMContentLoaded', function() {
-                            var m = new bootstrap.Modal(document.getElementById('uploadModal'));
-                        m.show();
-                              });
-                    </text>
-            }
-                                     })();
+        })();
     </script>
 }

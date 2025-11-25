@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\jmartinezg\\OneDrive - Comisión Nacional de Energía\\Escritorio\\Nueva carpeta\\formBeta\\form.csproj": {}
+    "C:\\Users\\jmartinezg\\OneDrive - Comisión Nacional de Energía\\Escritorio\\Nueva carpeta\\FormularioDEF\\form.csproj": {}
   },
   "projects": {
-    "C:\\Users\\jmartinezg\\OneDrive - Comisión Nacional de Energía\\Escritorio\\Nueva carpeta\\formBeta\\form.csproj": {
+    "C:\\Users\\jmartinezg\\OneDrive - Comisión Nacional de Energía\\Escritorio\\Nueva carpeta\\FormularioDEF\\form.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\jmartinezg\\OneDrive - Comisión Nacional de Energía\\Escritorio\\Nueva carpeta\\formBeta\\form.csproj",
+        "projectUniqueName": "C:\\Users\\jmartinezg\\OneDrive - Comisión Nacional de Energía\\Escritorio\\Nueva carpeta\\FormularioDEF\\form.csproj",
         "projectName": "form",
-        "projectPath": "C:\\Users\\jmartinezg\\OneDrive - Comisión Nacional de Energía\\Escritorio\\Nueva carpeta\\formBeta\\form.csproj",
+        "projectPath": "C:\\Users\\jmartinezg\\OneDrive - Comisión Nacional de Energía\\Escritorio\\Nueva carpeta\\FormularioDEF\\form.csproj",
         "packagesPath": "C:\\Users\\jmartinezg\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\jmartinezg\\OneDrive - Comisión Nacional de Energía\\Escritorio\\Nueva carpeta\\formBeta\\obj\\",
+        "outputPath": "C:\\Users\\jmartinezg\\OneDrive - Comisión Nacional de Energía\\Escritorio\\Nueva carpeta\\FormularioDEF\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
@@ -49,6 +49,12 @@
       "frameworks": {
         "net9.0": {
           "targetAlias": "net9.0",
+          "dependencies": {
+            "Newtonsoft.Json": {
+              "target": "Package",
+              "version": "[13.0.4, )"
+            }
+          },
           "imports": [
             "net461",
             "net462",

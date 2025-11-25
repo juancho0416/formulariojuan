@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace form.Pages;
 
-public class TwoFive : PageModel
+public class TwoFiveModel : PageModel
 {
 
 
@@ -32,11 +32,12 @@ public class TwoFive : PageModel
         TempData["NOM"] = Input.NOM;
         TempData["Contrato"] = Input.Contrato;
         TempData["Requerimiento"] = Input.Requerimiento;
+        TempData["Permiso"] = Input.Permiso;
         // TempData["Archivo"] = Input.Archivo;
 
 
-        // Redirige a la pagina 3 y se le agregan estos campos de ke han sido completados 
-        return RedirectToPage("TwoNine");
+        // Redirige  a third
+        return RedirectToPage("ZeroThird");
 
 
     }
@@ -63,10 +64,9 @@ public class TwoFive : PageModel
         [Required(ErrorMessage = "Es necesario seleccionar una empresa")]
         [Display(Name = "Empresa")]
         public string Empresa { get; set; } = string.Empty;
-
-        // [Required(ErrorMessage = "Es necesario seleccionar un archivo")]
-        // [Display(Name = "Archivo")]
-        // public string Archivo { get; set; } = string.Empty;
+        [Required(ErrorMessage = "Es necesario seleccionar una solicitud")]
+        [Display(Name = "Solicitud")]
+        public string Solicitud { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "Es necesario seleccionar un requerimiento")]
         [Display(Name = "Requerimiento")]
@@ -82,7 +82,7 @@ public class TwoFive : PageModel
         ///para guardar en db
         // [ActionName("Enviar")]
         // public IActionResult OnPostEnviar()
-        // { }   
+        // { }
     }
 
 }
