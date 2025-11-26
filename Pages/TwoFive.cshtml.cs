@@ -6,6 +6,7 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.Data.Sqlite;
 
 namespace form.Pages;
 
@@ -24,8 +25,8 @@ public class TwoFiveModel : PageModel
         {
             return Page();
         }
-        ///datos con tempdata
 
+        // Guardar datos en TempData
         TempData["Area"] = Input.Area;
         TempData["Empresa"] = Input.Empresa;
         TempData["ISO"] = Input.ISO;
@@ -33,12 +34,73 @@ public class TwoFiveModel : PageModel
         TempData["Contrato"] = Input.Contrato;
         TempData["Requerimiento"] = Input.Requerimiento;
         TempData["Permiso"] = Input.Permiso;
-        // TempData["Archivo"] = Input.Archivo;
 
+        // ✅ Obtener correo del usuario logueado
+        string correo = HttpContext.Session.GetString("correo") ?? string.Empty;
 
-        // Redirige  a third
-        return RedirectToPage("ZeroThird");
+        if (string.IsNullOrEmpty(correo))
+        {
+            ModelState.AddModelError(string.Empty, "No se pudo identificar al usuario. Inicia sesión nuevamente.");
+            return Page();
+        }
 
+        using var connection = new SqliteConnection("Data Source=usuarios.db");
+        connection.Open();
+
+        //
+        // ✅ 1. Obtener el ID del último formulario del usuario
+        //
+        var getIdCmd = connection.CreateCommand();
+        getIdCmd.CommandText = @"
+    SELECT Id 
+    FROM Formularios
+    WHERE Correo = $correo
+    ORDER BY Id DESC
+    LIMIT 1;
+";
+        getIdCmd.Parameters.AddWithValue("$correo", correo);
+
+        var result = getIdCmd.ExecuteScalar();
+
+        if (result == null)
+        {
+            ModelState.AddModelError(string.Empty, "No se encontró un formulario previo para este usuario.");
+            return Page();
+        }
+
+        int formularioId = Convert.ToInt32(result);
+
+        //
+        // ✅ 2. Actualizar ese formulario
+        //
+        var updateCmd = connection.CreateCommand();
+        updateCmd.CommandText = @"
+    UPDATE Formularios SET
+        Area = $area,
+        Empresa = $empresa,
+        ISO = $iso,
+        NOM = $nom,
+        Contrato = $contrato,
+        Solicitud = $solicitud,
+        Requerimiento = $requerimiento,
+        Permiso = $permiso,
+        Peticion = $peticion
+    WHERE Id = $id;
+";
+
+        updateCmd.Parameters.AddWithValue("$id", formularioId);
+        updateCmd.Parameters.AddWithValue("$area", Input.Area);
+        updateCmd.Parameters.AddWithValue("$empresa", Input.Empresa);
+        updateCmd.Parameters.AddWithValue("$iso", Input.ISO);
+        updateCmd.Parameters.AddWithValue("$nom", Input.NOM);
+        updateCmd.Parameters.AddWithValue("$contrato", Input.Contrato);
+        updateCmd.Parameters.AddWithValue("$solicitud", Input.Solicitud);
+        updateCmd.Parameters.AddWithValue("$requerimiento", Input.Requerimiento);
+        updateCmd.Parameters.AddWithValue("$permiso", Input.Permiso);
+        updateCmd.Parameters.AddWithValue("$peticion", Input.Peticion);
+
+        updateCmd.ExecuteNonQuery();
+        return RedirectToPage("/ZeroThird");
 
     }
 
@@ -84,8 +146,9 @@ public class TwoFiveModel : PageModel
         // public IActionResult OnPostEnviar()
         // { }
     }
-
 }
+
+
 
 
 

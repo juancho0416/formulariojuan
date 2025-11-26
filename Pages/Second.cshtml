@@ -11,7 +11,7 @@
 <form method="post" id="mainForm">
     <div class="mb-3">
         <label asp-for="Input.Nombre" class="form-label">Nombre del titular</label>
-        <input asp-for="Input.Nombre" class="form-control" />
+        <input asp-for="Input.Nombre" class="form-control" type="text" placeholder="Ingrese el nombre del titular" />
         <span asp-validation-for="Input.Nombre" class="text-danger"></span>
         <hr>
         </hr>
@@ -24,28 +24,31 @@
 
             <div class="mb-3">
                 <label asp-for="Input.RFC" class="form-label">RFC</label>
-                <input asp-for="Input.RFC" class="form-control" />
+                <input asp-for="Input.RFC" class="form-control" type="text" placeholder="Ingrese RFC " />
                 <span asp-validation-for="Input.RFC" class="text-danger"></span>
             </div>
 
             <div class="mb-3">
                 <label asp-for="Input.CURP" class="form.label">CURP</label>
-                <input asp-for="Input.CURP" class="form-control" />
+                <input asp-for="Input.CURP" class="form-control" type="text" placeholder="Ingrese CURP" />
                 <span asp-validation-for="Input.CURP" class="text-danger"></span>
             </div>
             <div class="mb-3">
                 <label asp-for="Input.Telefono" class="form-label">Telefono</label>
-                <input asp-for="Input.Telefono" class="form-control" />
+                <input asp-for="Input.Telefono" class="form-control" type="text"
+                    placeholder="Ingrese su numero de telefono" />
                 <span asp-validation-for="Input.Telefono" class="text-danger"></span>
             </div>
             <div class="mb-3">
                 <label asp-for="Input.Folio" class="form-label">Folio</label>
-                <input asp-for="Input.Folio" class="form-control" />
+                <input asp-for="Input.Folio" class="form-control" type="text"
+                    placeholder="Ingrese su numero de folio" />
                 <span asp-validation-for="Input.Folio" class="text-danger"></span>
             </div>
             <div class="mb-3">
                 <label asp-for="Input.RazonSocial" class="form-label">Denominacion o razon social</label>
-                <input asp-for="Input.RazonSocial" class="form-control" />
+                <input asp-for="Input.RazonSocial" class="form-control" type="text"
+                    placeholder="Ingrese denominacion o razon social" />
                 <span asp-validation-for="Input.RazonSocial" class="text-danger"></span>
             </div>
         </div>
@@ -54,8 +57,21 @@
         <div class="col-md-6">
 
             <div class="mb-3">
+                <label asp-for="Input.Calle" class="form-label">Calle</label>
+                <input asp-for="Input.Calle" class="form-control" type="text"
+                    placeholder="Ingrese nombre de la calle" />
+                <span asp-validation.for="Input.Calle" class="text-danger"></span>
+            </div>
+            <div class="mb-3">
+                <label asp-for="Input.Numero" class="form-label">Numero</label>
+                <input asp-for="Input.Numero" class="form-control" type="text"
+                    placeholder="Ingrese el numero del domicilio" />
+                <span asp-validation-for="Input.Numero" class="text-danger"></span>
+            </div>
+            <div class="mb-3">
                 <label asp-for="CodigoPostal" class="form-label">Código postal</label>
-                <input asp-for="CodigoPostal" class="form-control" id="Input_CodigoPostal" />
+                <input asp-for="CodigoPostal" class="form-control" id="Input_CodigoPostal" type="text"
+                    placeholder="Ingrese su codigo postal" />
                 <span id="cpError" class="text-danger"></span>
             </div>
             <!-- Estado (readonly) -->
@@ -72,18 +88,6 @@
                 </select>
                 <span asp-validation-for="Input.Municipio" class="text-danger"></span>
             </div>
-            <div class="mb-3">
-                <label asp-for="Input.Calle" class="form-label">Calle</label>
-                <input asp-for="Input.Calle" class="form-control" />
-                <span asp-validation-for="Input.Calle" class="text-danger"></span>
-            </div>
-            <div class="mb-3">
-                <label asp-for="Input.Numero" class="form-label">Numero</label>
-                <input asp-for="Input.Numero" class="form-control" />
-                <span asp-validtion-for="Input.Numero" class="text-danger"></span>
-            </div>
-
-
         </div>
     </div>
     <form method="post" asp-page-handler="Enviar">

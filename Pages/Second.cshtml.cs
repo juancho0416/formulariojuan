@@ -5,6 +5,8 @@ using System.Net.Http;
 using System.Text.Json.Nodes;
 using System.Threading.Tasks;
 using System.Text.Json;
+using Microsoft.Data.Sqlite;
+
 
 
 
@@ -23,6 +25,8 @@ public class SecondModel : PageModel
     public FormInput Input { get; set; } = new FormInput();
 
     [BindProperty]
+
+
     public string CodigoPostal { get; set; } = string.Empty;
 
     public string Estado { get; set; } = string.Empty;
@@ -35,7 +39,6 @@ public class SecondModel : PageModel
         if (TempData.ContainsKey("Estado")) Estado = TempData.Peek("Estado")?.ToString() ?? string.Empty;
         if (TempData.ContainsKey("Municipio")) Municipio = TempData.Peek("Municipio")?.ToString() ?? string.Empty;
     }
-
     public async Task<IActionResult> OnPostAsync()
     {
         if (!ModelState.IsValid)
@@ -50,7 +53,7 @@ public class SecondModel : PageModel
         TempData["Telefono"] = Input.Telefono;
         TempData["Folio"] = Input.Folio;
 
-        // Validar CP con API SEPOMEX (mismo comportamiento si un usuario presiona Enviar)
+        // Validar CP con API SEPOMEX
         if (!string.IsNullOrEmpty(CodigoPostal))
         {
             var url = $"https://api.zippopotam.us/mx/{CodigoPostal}";
@@ -70,14 +73,57 @@ public class SecondModel : PageModel
             }
         }
 
-        // Guardar CP / Estado / Municipio en TempData antes de redirigir
+        // Guardar CP / Estado / Municipio en TempData
         TempData["CodigoPostal"] = CodigoPostal ?? string.Empty;
         TempData["Estado"] = Estado ?? string.Empty;
         TempData["Municipio"] = Municipio ?? string.Empty;
 
-        // Redirigir a la siguiente página
+        // ✅ Obtener correo del usuario logueado
+        string correo = HttpContext.Session.GetString("correo") ?? string.Empty;
+
+        if (string.IsNullOrEmpty(correo))
+        {
+            Error = "No se pudo identificar al usuario. Inicia sesión nuevamente.";
+            return Page();
+        }
+
+        // ✅ Guardar formulario en SQLite
+        using var connection = new SqliteConnection("Data Source=usuarios.db");
+        connection.Open();
+
+        var command = connection.CreateCommand();
+        command.CommandText = @"
+        INSERT INTO Formularios 
+        (Correo, Nombre, RFC, CURP, Folio, Telefono, Calle, Numero, Numero2, CodigoPostal, Estado, Municipio, RazonSocial, Fecha)
+        VALUES 
+        ($correo, $nombre, $rfc, $curp, $folio, $telefono, $calle, $numero, $numero2, $cp, $estado, $municipio, $razon, $fecha);
+    ";
+
+        command.Parameters.AddWithValue("$correo", correo);
+        command.Parameters.AddWithValue("$nombre", Input.Nombre);
+        command.Parameters.AddWithValue("$rfc", Input.RFC);
+        command.Parameters.AddWithValue("$curp", Input.CURP);
+        command.Parameters.AddWithValue("$folio", Input.Folio);
+        command.Parameters.AddWithValue("$telefono", Input.Telefono);
+        command.Parameters.AddWithValue("$calle", Input.Calle);
+        command.Parameters.AddWithValue("$numero", Input.Numero);
+        command.Parameters.AddWithValue("$numero2", Input.Numero2);
+        command.Parameters.AddWithValue("$cp", CodigoPostal);
+        command.Parameters.AddWithValue("$estado", Estado);
+        command.Parameters.AddWithValue("$municipio", Municipio);
+        command.Parameters.AddWithValue("$razon", Input.RazonSocial);
+        command.Parameters.AddWithValue("$fecha", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
+
+        command.ExecuteNonQuery();
+
+        // ✅ Redirigir a la siguiente página
         return RedirectToPage("TwoFive");
     }
+
+
+
+
+
 
     // Nuevo handler (GET) que responde con JSON para llenar Estado/Municipio
     public async Task<JsonResult> OnGetFetchPostalAsync(string codigoPostal)
@@ -140,7 +186,7 @@ public class SecondModel : PageModel
         [Display(Name = "Teléfono celular")]
         public string Telefono { get; set; } = string.Empty;
 
-        [Required(ErrorMessage = "Es necesario ingresar el nombre de la calle")]
+        [Required(ErrorMessage = "Es necesario ingresar la calle ")]
         [Display(Name = "Calle")]
         public string Calle { get; set; } = string.Empty;
 
@@ -152,11 +198,13 @@ public class SecondModel : PageModel
         public string Numero2 { get; set; } = string.Empty;
 
         public string Estado { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Es necesario seleccionar un municipio")]
+        [Display(Name = "Municipio")]
         public string Municipio { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "Es necesario ingresar denominacion o razon social")]
         [Display(Name = "RazonSocial")]
         public string RazonSocial { get; set; } = string.Empty;
-
     }
 }

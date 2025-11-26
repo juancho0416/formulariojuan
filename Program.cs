@@ -1,12 +1,21 @@
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
+// Servicios necesarios
 builder.Services.AddRazorPages();
-builder.Services.AddHttpClient();   // 👈 aquí, antes de Build()
+builder.Services.AddHttpClient();
+builder.Services.AddSingleton<EmailService>();
+
+// Habilitar sesiones
+builder.Services.AddSession(options =>
+{
+    options.IdleTimeout = TimeSpan.FromMinutes(30); // Tiempo de sesión
+    options.Cookie.HttpOnly = true;
+    options.Cookie.IsEssential = true;
+});
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
+// Configuración del pipeline
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Error");
@@ -14,12 +23,18 @@ if (!app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+app.UseStaticFiles();
+
+
 app.UseRouting();
+
+//  Activar sesiones ANTES de Authorization
+app.UseSession();
+
 app.UseAuthorization();
 
-app.MapStaticAssets();
-app.MapRazorPages()
-   .WithStaticAssets();
+app.MapRazorPages();
 
 app.Run();
+
 

@@ -1,47 +1,89 @@
-using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.Data.Sqlite;
+using System.Security.Cryptography;
+using System.Text;
 
 namespace form.Pages;
 
 public class RegistroModel : PageModel
 {
+    private readonly IConfiguration _config;
+    private readonly EmailService _email;
+
+    public RegistroModel(IConfiguration config, EmailService email)
+    {
+        _config = config;
+        _email = email;
+    }
+
     [BindProperty]
-    public LoginInput Input { get; set; } = new LoginInput();
+    public InputModel Input { get; set; }
 
-    public void OnGet() { }
+    public string ErrorMessage { get; set; }
 
-    public IActionResult OnPost()
+    public async Task<IActionResult> OnPost()
     {
         if (!ModelState.IsValid)
+            return Page();
+
+        string correoNormalizado = Input.Correo.Trim().ToLower();
+
+        using var connection = new SqliteConnection("Data Source=usuarios.db");
+        connection.Open();
+
+        //  Verificar si el correo ya existe
+        var check = connection.CreateCommand();
+        check.CommandText = "SELECT COUNT(*) FROM Usuarios WHERE Correo = $correo";
+        check.Parameters.AddWithValue("$correo", correoNormalizado);
+
+        long count = (long)check.ExecuteScalar();
+
+        if (count > 0)
         {
+            ErrorMessage = "El correo ya está registrado.";
             return Page();
         }
 
-        // Redirige a la pagina 3 y se le agregan estos campos de ke han sido completados 
-        return RedirectToPage("ZeroSecond");
+        // Hash de contraseña
+        string hashedPassword = HashPassword(Input.Contraseña);
+
+        // Generar token de confirmación
+        string token = Guid.NewGuid().ToString();
+
+        // Insertar usuario NO confirmado
+        var command = connection.CreateCommand();
+        command.CommandText = @"
+            INSERT INTO Usuarios (Nombre, Apellido, Correo, Contrasena, TokenConfirmacion, Confirmado)
+            VALUES ($nombre, $apellido, $correo, $contrasena, $token, 0);
+        ";
+
+        command.Parameters.AddWithValue("$nombre", Input.Nombre);
+        command.Parameters.AddWithValue("$apellido", Input.Apellido);
+        command.Parameters.AddWithValue("$correo", correoNormalizado);
+        command.Parameters.AddWithValue("$contrasena", hashedPassword);
+        command.Parameters.AddWithValue("$token", token);
+
+        command.ExecuteNonQuery();
+
+        //  Enviar correo de confirmación con Resend
+        await _email.EnviarCorreoConfirmacion(correoNormalizado, token);
+        return RedirectToPage("/ConfirmacionEnviada");
+
     }
 
-    public class LoginInput
+    private string HashPassword(string password)
     {
-        //regx para validar el correo y contraseña
-        [Required(ErrorMessage = "Correo electronico requerido")]
-        [RegularExpression(@"^[\w\.-]+@[\w\.-]+\.\w{2,}$",
-        ErrorMessage = "El correo electronico no tiene el formato válido")]
-        public string Email { get; set; } = string.Empty;
+        using var sha256 = SHA256.Create();
+        byte[] bytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(password));
+        return Convert.ToBase64String(bytes);
+    }
 
-        [Required(ErrorMessage = "Contraseña requerida")]
-        [DataType(DataType.Password)]
-        [RegularExpression(@"^(?=.{8,})(?=.*\d)(?=.*[A-Z])(?=.*[a-z]).*$", ErrorMessage = "La contraseña debe tener mínimo 8 caracteres, incluir mayúscula, minúscula y número")]
-        public string Password { get; set; } = string.Empty;
-        [Required(ErrorMessage = "Nombre requerido")]
-        [RegularExpression(@"^[A-Za-zÁÉÍÓÚÜÑáéíóúüñ'´`-]{2,}(?:\s+[A-Za-zÁÉÍÓÚÜÑáéíóúüñ'´`-]+)*$",
-            ErrorMessage = "El nombre contiene caracteres no permitidos o es demasiado corto")]
-        public string Name { get; set; } = string.Empty;
-
-        [Required(ErrorMessage = "Apellido requerido")]
-        [RegularExpression(@"^[A-Za-zÁÉÍÓÚÜÑáéíóúüñ'´`-]{2,}(?:\s+[A-Za-zÁÉÍÓÚÜÑáéíóúüñ'´`-]+)*$",
-            ErrorMessage = "El nombre contiene caracteres no permitidos o es demasiado corto")]
-        public string Apellido { get; set; } = string.Empty;
+    public class InputModel
+    {
+        public string Nombre { get; set; }
+        public string Apellido { get; set; }
+        public string Correo { get; set; }
+        public string Contraseña { get; set; }
     }
 }

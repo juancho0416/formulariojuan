@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.Data.Sqlite;
 
 namespace form.Pages
 {
@@ -63,12 +64,65 @@ namespace form.Pages
             }
 
             TempData["UploadMessage"] = "Archivo subido correctamente.";
-            TempData["UploadedFile"] = safeFileName; // guarda el nombre
+            TempData["UploadedFile"] = safeFileName;
             TempData["ShowUploadModal"] = true;
 
-            //se redirige al third al dar en continuar con el modal
+            // ✅ Obtener correo del usuario logueado
+            string correo = HttpContext.Session.GetString("correo") ?? string.Empty;
+
+            if (string.IsNullOrEmpty(correo))
+            {
+                TempData["UploadMessage"] = "Error: No se pudo identificar al usuario.";
+                TempData["ShowUploadModal"] = true;
+                return Page();
+            }
+
+            // ✅ Guardar en SQLite
+            using var connection = new SqliteConnection("Data Source=usuarios.db");
+            connection.Open();
+
+            // ✅ 1. Obtener el ID del último formulario del usuario
+            var getIdCmd = connection.CreateCommand();
+            getIdCmd.CommandText = @"
+        SELECT Id 
+        FROM Formularios
+        WHERE Correo = $correo
+        ORDER BY Id DESC
+        LIMIT 1;
+    ";
+            getIdCmd.Parameters.AddWithValue("$correo", correo);
+
+            var result = getIdCmd.ExecuteScalar();
+
+            if (result == null)
+            {
+                TempData["UploadMessage"] = "Error: No se encontró un formulario previo.";
+                TempData["ShowUploadModal"] = true;
+                return Page();
+            }
+
+            int formularioId = Convert.ToInt32(result);
+
+            // ✅ 2. Actualizar el formulario con los datos del archivo
+            var updateCmd = connection.CreateCommand();
+            updateCmd.CommandText = @"
+        UPDATE Formularios SET
+            ArchivoNombre = $nombre,
+            ArchivoRuta = $ruta,
+            ArchivoExtension = $ext
+        WHERE Id = $id;
+    ";
+
+            updateCmd.Parameters.AddWithValue("$id", formularioId);
+            updateCmd.Parameters.AddWithValue("$nombre", safeFileName);
+            updateCmd.Parameters.AddWithValue("$ruta", filePath);
+            updateCmd.Parameters.AddWithValue("$ext", ext);
+
+            updateCmd.ExecuteNonQuery();
+
             return Page();
         }
+
     }
 }
 
