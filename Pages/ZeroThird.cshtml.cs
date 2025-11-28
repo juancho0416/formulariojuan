@@ -88,11 +88,6 @@ public class ZeroThirdModel : PageModel
         updateCmd.Parameters.AddWithValue("$parrafo", Input.Parrafo);
 
         updateCmd.ExecuteNonQuery();
-
-
-
-
-
         // Redirige  a third
         return RedirectToPage("TwoNine");
 

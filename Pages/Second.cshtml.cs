@@ -116,8 +116,8 @@ public class SecondModel : PageModel
 
         command.ExecuteNonQuery();
 
-        // ✅ Redirigir a la siguiente página
-        return RedirectToPage("TwoFive");
+        //  Redirigir a la siguiente página
+        return RedirectToPage("/TwoFive");
     }
 
 

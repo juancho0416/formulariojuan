@@ -90,14 +90,17 @@
             </div>
         </div>
     </div>
-    <form method="post" asp-page-handler="Enviar">
-        <button type="submit" class="btn btn-primary pull-right">Enviar</button>
-    </form>
-    <form method="post" asp-page-handler="Volver">
-        <a asp-page="/Index" class="btn btn-secondary ms-2">Volver</a>
-    </form>
+
+
+    @* <!-- campos -->
+    <button type="submit" asp-page-handler="Enviar" class="btn btn-primary">Enviar</button>
+    <button type="submit" asp-page-handler="Volver" class="btn btn-secondary">Volver</button> *@
+    <button type="submit" class="btn btn-primary">Enviar</button>
+    <a asp-page="/Index" class="btn btn-secondary">Volver</a>
+
 
 </form>
+
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />

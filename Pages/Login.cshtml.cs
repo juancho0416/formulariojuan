@@ -63,8 +63,9 @@ public class LoginModel : PageModel
         // ✅ 4. Guardar correo en sesión SOLO si todo es correcto
         HttpContext.Session.SetString("correo", correoNormalizado);
 
+
         // ✅ 5. Redirigir al usuario
-        return RedirectToPage("ZeroSecond");
+        return RedirectToPage("Menu");
     }
 
 

@@ -27,12 +27,13 @@ public class RegistroModel : PageModel
         if (!ModelState.IsValid)
             return Page();
 
+        Console.WriteLine("ModelState válido");
+
         string correoNormalizado = Input.Correo.Trim().ToLower();
 
         using var connection = new SqliteConnection("Data Source=usuarios.db");
         connection.Open();
 
-        //  Verificar si el correo ya existe
         var check = connection.CreateCommand();
         check.CommandText = "SELECT COUNT(*) FROM Usuarios WHERE Correo = $correo";
         check.Parameters.AddWithValue("$correo", correoNormalizado);
@@ -45,31 +46,32 @@ public class RegistroModel : PageModel
             return Page();
         }
 
-        // Hash de contraseña
         string hashedPassword = HashPassword(Input.Contraseña);
-
-        // Generar token de confirmación
         string token = Guid.NewGuid().ToString();
 
-        // Insertar usuario NO confirmado
         var command = connection.CreateCommand();
         command.CommandText = @"
-            INSERT INTO Usuarios (Nombre, Apellido, Correo, Contrasena, TokenConfirmacion, Confirmado)
-            VALUES ($nombre, $apellido, $correo, $contrasena, $token, 0);
-        ";
-
+        INSERT INTO Usuarios (Nombre, Apellido, Correo, Contrasena, TokenConfirmacion, Confirmado)
+        VALUES ($nombre, $apellido, $correo, $contrasena, $token, 0);
+    ";
         command.Parameters.AddWithValue("$nombre", Input.Nombre);
         command.Parameters.AddWithValue("$apellido", Input.Apellido);
         command.Parameters.AddWithValue("$correo", correoNormalizado);
         command.Parameters.AddWithValue("$contrasena", hashedPassword);
         command.Parameters.AddWithValue("$token", token);
-
         command.ExecuteNonQuery();
 
-        //  Enviar correo de confirmación con Resend
-        await _email.EnviarCorreoConfirmacion(correoNormalizado, token);
-        return RedirectToPage("/ConfirmacionEnviada");
-
+        try
+        {
+            await _email.EnviarCorreoConfirmacion(correoNormalizado, token);
+            Console.WriteLine("Correo enviado correctamente");
+            return Redirect("/ConfirmacionEnviada");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("Error enviando correo: " + ex.Message);
+            return Page();
+        }
     }
 
     private string HashPassword(string password)
@@ -83,6 +85,7 @@ public class RegistroModel : PageModel
     {
         public string Nombre { get; set; }
         public string Apellido { get; set; }
+
         public string Correo { get; set; }
         public string Contraseña { get; set; }
     }
