@@ -10,11 +10,12 @@
         <span asp-validation-for="CorreoBusqueda" class="text-danger"></span>
     </div>
     <button type="submit" class="btn btn-primary">Buscar</button>
+    <a asp-page="Index" class="btn btn-secondary">Volver</a>
 </form>
 
 @if (!string.IsNullOrEmpty(Model.Mensaje))
 {
-    <div class="alert @(Model.Formularios.Count > 0 ? "alert-success" : "alert-danger") mt-3">
+    <div class="alert @Model.TipoAlerta mt-3">
         @Model.Mensaje
     </div>
 }
@@ -36,11 +37,21 @@
     </ul>
 
     <!-- Botón para enviar todos los formularios al correo -->
-
     <form method="post" asp-page-handler="EnviarCorreo">
         <input type="hidden" asp-for="CorreoBusqueda" />
-        <button type="submit" class="btn btn-primary">Enviar al correo</button>
+        <button type="submit" class="btn btn-secondary pull-left">Enviar al correo</button>
     </form>
+
+    <form method="post">
+        <input type="hidden" asp-for="CorreoBusqueda" />
+        <button type="submit" asp-page-handler="ExportarPdf" class="btn btn-primary pull-right">
+            Exportar a PDF
+        </button>
+    </form>
+
+
 }
+
+
 
 <partial name="_ValidationScriptsPartial" />

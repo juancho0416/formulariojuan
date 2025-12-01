@@ -35,7 +35,7 @@ public class TwoFiveModel : PageModel
         TempData["Requerimiento"] = Input.Requerimiento;
         TempData["Permiso"] = Input.Permiso;
 
-        // ✅ Obtener correo del usuario logueado
+        //  Obtener correo del usuario logueado
         string correo = HttpContext.Session.GetString("correo") ?? string.Empty;
 
         if (string.IsNullOrEmpty(correo))
@@ -48,7 +48,7 @@ public class TwoFiveModel : PageModel
         connection.Open();
 
         //
-        // ✅ 1. Obtener el ID del último formulario del usuario
+        // 1. Obtener el ID del último formulario del usuario
         //
         var getIdCmd = connection.CreateCommand();
         getIdCmd.CommandText = @"

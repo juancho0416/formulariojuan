@@ -37,14 +37,13 @@
             <p><strong>Ley:</strong>@Model.Ley</p>
             <p><strong>Articulo:</strong>@Model.Articulo</p>
             <p><strong>Parrafo:</strong>@Model.Parrafo</p>
+            <p><strong>Archivo:</strong>@Model.Archivo</p>
         </div>
     </div>
 </div>
-
-<form method="post">
-
+<form method="post" asp-page-handler="Confirm">
     <button type="submit" class="btn btn-primary">
-        Confirmar
-        y finalizar</button>
+        Confirmar y finalizar
+    </button>
     <a asp-page="/TwoNine" class="btn btn-secondary ms-2">Volver</a>
 </form>

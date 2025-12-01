@@ -2,9 +2,19 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Data.Sqlite;
 using System.Collections.Generic;
-using System.Text;
+using System.IO;
 using System.Threading.Tasks;
 using System.ComponentModel.DataAnnotations;
+
+// iText7
+using iText.Kernel.Pdf;
+using iText.Layout;
+using iText.Layout.Element;
+using iText.Kernel.Font;
+using iText.IO.Font;
+using iText.Layout.Properties;
+using iText.IO.Font.Constants;
+
 
 namespace form.Pages
 {
@@ -25,6 +35,8 @@ namespace form.Pages
 
         public string Mensaje { get; set; } = string.Empty;
 
+        public string TipoAlerta { get; set; } = "alert-info";
+
         public void OnGet() { }
 
         public void OnPost()
@@ -32,11 +44,22 @@ namespace form.Pages
             if (string.IsNullOrWhiteSpace(CorreoBusqueda))
             {
                 Mensaje = "Ingrese un correo para buscar.";
+                TipoAlerta = "alert-danger";
                 return;
             }
 
             Formularios = ObtenerFormularios(CorreoBusqueda);
-            Mensaje = Formularios.Count > 0 ? "Datos encontrados." : "No se encontró información relacionada a ese correo.";
+
+            if (Formularios.Count > 0)
+            {
+                Mensaje = "Datos encontrados.";
+                TipoAlerta = "alert-success";
+            }
+            else
+            {
+                Mensaje = "No se encontró información relacionada a ese correo.";
+                TipoAlerta = "alert-danger";
+            }
         }
 
         // Handler para enviar correo con todos los formularios
@@ -45,6 +68,7 @@ namespace form.Pages
             if (string.IsNullOrWhiteSpace(CorreoBusqueda))
             {
                 Mensaje = "Ingrese un correo para enviar.";
+                TipoAlerta = "alert-danger";
                 return Page();
             }
 
@@ -53,10 +77,11 @@ namespace form.Pages
             if (formularios.Count == 0)
             {
                 Mensaje = "No se encontró información relacionada a ese correo.";
+                TipoAlerta = "alert-danger";
                 return Page();
             }
 
-            var builder = new StringBuilder();
+            var builder = new System.Text.StringBuilder();
             builder.Append("<h2>Todos tus formularios</h2>");
 
             foreach (var form in formularios)
@@ -75,10 +100,63 @@ namespace form.Pages
             );
 
             Mensaje = "Correo enviado correctamente.";
+            TipoAlerta = "alert-success";
             return Page();
         }
 
-        //  Método reutilizable para obtener formularios
+        // Handler para exportar a PDF
+        public IActionResult OnPostExportarPdf()
+        {
+            var formularios = ObtenerFormularios(CorreoBusqueda);
+
+            using var ms = new MemoryStream();
+            using (var writer = new PdfWriter(ms))
+            {
+                using var pdf = new PdfDocument(writer);
+                var doc = new Document(pdf);
+
+                PdfFont boldFont = PdfFontFactory.CreateFont(StandardFonts.HELVETICA_BOLD);
+                PdfFont normalFont = PdfFontFactory.CreateFont(StandardFonts.HELVETICA);
+
+                // Título
+                doc.Add(new Paragraph("Consulta de Formularios")
+                    .SetFont(boldFont)
+                    .SetFontSize(16)
+                    .SetTextAlignment(TextAlignment.CENTER));
+
+                doc.Add(new Paragraph($"Correo: {CorreoBusqueda}")
+                    .SetFont(normalFont)
+                    .SetFontSize(12));
+
+                doc.Add(new Paragraph("\n"));
+
+                // Recorrer cada formulario
+                foreach (var form in formularios)
+                {
+                    // Crear tabla de 2 columnas
+                    Table table = new Table(2).UseAllAvailableWidth();
+
+                    foreach (var kv in form)
+                    {
+                        // Columna 1: nombre del campo en negritas
+                        table.AddCell(new Cell().Add(new Paragraph(kv.Key).SetFont(boldFont)));
+
+                        // Columna 2: valor del campo
+                        table.AddCell(new Cell().Add(new Paragraph(kv.Value).SetFont(normalFont)));
+                    }
+
+                    // Agregar tabla al documento
+                    doc.Add(table);
+
+                    // Separador entre formularios
+                    doc.Add(new Paragraph("\n-----------------------------\n"));
+                }
+            }
+
+            return File(ms.ToArray(), "application/pdf", "consulta.pdf");
+        }
+
+        // Método reutilizable para obtener formularios
         private List<Dictionary<string, string>> ObtenerFormularios(string correo)
         {
             var lista = new List<Dictionary<string, string>>();

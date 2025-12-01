@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Data.Sqlite;
 using form.Models;
+using form.Services;
 
 namespace form.Pages.Formularios
 {
@@ -35,6 +36,11 @@ namespace form.Pages.Formularios
                     Correo = reader.IsDBNull(10) ? "" : reader.GetString(10)
                 };
             }
+
+            // Auditoría: registrar consulta
+            var auditoria = new AuditoriaService();
+            var usuario = User.Identity.IsAuthenticated ? User.Identity.Name : "anonimo";
+            auditoria.Registrar(usuario, "CONSULTAR", "Formulario", id);
         }
     }
 }

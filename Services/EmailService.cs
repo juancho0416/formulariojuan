@@ -90,8 +90,6 @@ public class EmailService
 </body>
 </html>
 "
-
-      // html = $"<p>Haz clic aquí para confirmar tu cuenta:</p><p><a href='{urlConfirmacion}'>Confirmar correo</a></p>"
     };
 
     var json = JsonSerializer.Serialize(data);
@@ -103,54 +101,6 @@ public class EmailService
     Console.WriteLine("API KEY USADA: " + apiKey);
 
   }
-
-
-
-
-
-
-
-
-  // //enviar formulario al correo con resend
-
-  // public async Task EnviarFormulario(string nombre, string rfc, string curp, string folio,
-  //                                    string telefono, string calle, string numero, string cp,
-  //                                    string estado, string municipio, string razon, string correoDestino)
-  // {
-  //   string apiKey = _config["Resend:ApiKey"];
-  //   var http = new HttpClient();
-  //   http.DefaultRequestHeaders.Add("Authorization", $"Bearer {apiKey}");
-
-  //   var data = new
-  //   {
-  //     from = "onboarding@resend.dev",
-  //     to = new[] { correoDestino }, // se manda al correo del usuario
-  //     subject = "Confirmación de tu formulario",
-  //     html = $@"
-  //           <h2>Gracias por llenar tu formulario</h2>
-  //           <p><strong>Nombre:</strong> {nombre}</p>
-  //           <p><strong>RFC:</strong> {rfc}</p>
-  //           <p><strong>CURP:</strong> {curp}</p>
-  //           <p><strong>Folio:</strong> {folio}</p>
-  //           <p><strong>Teléfono:</strong> {telefono}</p>
-  //           <p><strong>Dirección:</strong> {calle} {numero}, CP {cp}, {municipio}, {estado}</p>
-  //           <p><strong>Razón Social:</strong> {razon}</p>
-  //           <p>Fecha de registro: {DateTime.Now}</p>
-
-  //       "
-  //   };
-
-  //   var json = JsonSerializer.Serialize(data);
-  //   var content = new StringContent(json, Encoding.UTF8, "application/json");
-  //   await http.PostAsync("https://api.resend.com/emails", content);
-  // }
-
-
-
-
-
-
-
   /// <summary>
   /// Envía un correo con los datos del formulario TwoFive
   /// </summary>
@@ -302,5 +252,37 @@ public class EmailService
       Console.WriteLine("Error enviando correo: " + ex.Message);
     }
   }
+
+
+  //email de notificacion al completar el formulario y enviarlo
+  public async Task EnviarNotificacion(string correoDestino, string asunto, string htmlContenido)
+  {
+    string apiKey = _config["Resend:ApiKey"];
+    using var http = new HttpClient();
+    http.DefaultRequestHeaders.Add("Authorization", $"Bearer {apiKey}");
+
+    var data = new
+    {
+      from = "onboarding@resend.dev",
+      to = new[] { correoDestino },
+      subject = asunto,
+      html = htmlContenido
+    };
+
+    var json = JsonSerializer.Serialize(data);
+    var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+    try
+    {
+      var response = await http.PostAsync("https://api.resend.com/emails", content);
+      response.EnsureSuccessStatusCode();
+      Console.WriteLine("Correo enviado correctamente");
+    }
+    catch (Exception ex)
+    {
+      Console.WriteLine("Error enviando correo: " + ex.Message);
+    }
+  }
 }
+
 

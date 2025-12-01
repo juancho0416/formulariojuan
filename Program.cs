@@ -1,9 +1,15 @@
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Servicios necesarios
 builder.Services.AddRazorPages();
 builder.Services.AddHttpClient();
 builder.Services.AddSingleton<EmailService>();
+builder.Services.AddScoped<EmailService>();
+
+
+// ✅ Registrar SignalR
+builder.Services.AddSignalR();
 
 // Habilitar sesiones
 builder.Services.AddSession(options =>
@@ -25,10 +31,9 @@ if (!app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 
-
 app.UseRouting();
 
-//  Activar sesiones ANTES de Authorization
+// Activar sesiones ANTES de Authorization
 app.UseSession();
 
 app.UseAuthorization();
@@ -36,8 +41,6 @@ app.UseAuthorization();
 app.MapRazorPages();
 
 app.Run();
-
-
 
 
 

@@ -78,7 +78,7 @@ public class SecondModel : PageModel
         TempData["Estado"] = Estado ?? string.Empty;
         TempData["Municipio"] = Municipio ?? string.Empty;
 
-        // ✅ Obtener correo del usuario logueado
+        //  Obtener correo del usuario logueado
         string correo = HttpContext.Session.GetString("correo") ?? string.Empty;
 
         if (string.IsNullOrEmpty(correo))
@@ -87,16 +87,16 @@ public class SecondModel : PageModel
             return Page();
         }
 
-        // ✅ Guardar formulario en SQLite
+        // Guardar formulario en SQLite
         using var connection = new SqliteConnection("Data Source=usuarios.db");
         connection.Open();
 
         var command = connection.CreateCommand();
         command.CommandText = @"
         INSERT INTO Formularios 
-        (Correo, Nombre, RFC, CURP, Folio, Telefono, Calle, Numero, Numero2, CodigoPostal, Estado, Municipio, RazonSocial, Fecha)
+        (Correo, Nombre, RFC, CURP, Folio, Telefono, Calle, Numero, CodigoPostal, Estado, Municipio, RazonSocial, Fecha)
         VALUES 
-        ($correo, $nombre, $rfc, $curp, $folio, $telefono, $calle, $numero, $numero2, $cp, $estado, $municipio, $razon, $fecha);
+        ($correo, $nombre, $rfc, $curp, $folio, $telefono, $calle, $numero, $cp, $estado, $municipio, $razon, $fecha);
     ";
 
         command.Parameters.AddWithValue("$correo", correo);
@@ -107,7 +107,6 @@ public class SecondModel : PageModel
         command.Parameters.AddWithValue("$telefono", Input.Telefono);
         command.Parameters.AddWithValue("$calle", Input.Calle);
         command.Parameters.AddWithValue("$numero", Input.Numero);
-        command.Parameters.AddWithValue("$numero2", Input.Numero2);
         command.Parameters.AddWithValue("$cp", CodigoPostal);
         command.Parameters.AddWithValue("$estado", Estado);
         command.Parameters.AddWithValue("$municipio", Municipio);
@@ -193,10 +192,6 @@ public class SecondModel : PageModel
         [Required(ErrorMessage = "Es necesario ingresar el numero de la calle")]
         [Display(Name = "Numero")]
         public string Numero { get; set; } = string.Empty;
-
-        [Display(Name = "Numero2")]
-        public string Numero2 { get; set; } = string.Empty;
-
         public string Estado { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "Es necesario seleccionar un municipio")]

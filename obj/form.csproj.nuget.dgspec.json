@@ -54,6 +54,10 @@
               "target": "Package",
               "version": "[4.14.1, )"
             },
+            "Microsoft.AspNetCore.SignalR": {
+              "target": "Package",
+              "version": "[1.2.0, )"
+            },
             "Microsoft.Data.Sqlite": {
               "target": "Package",
               "version": "[10.0.0, )"
@@ -61,6 +65,18 @@
             "Newtonsoft.Json": {
               "target": "Package",
               "version": "[13.0.4, )"
+            },
+            "Resend": {
+              "target": "Package",
+              "version": "[0.2.1, )"
+            },
+            "itext7": {
+              "target": "Package",
+              "version": "[9.4.0, )"
+            },
+            "itext7.bouncy-castle-adapter": {
+              "target": "Package",
+              "version": "[9.4.0, )"
             }
           },
           "imports": [

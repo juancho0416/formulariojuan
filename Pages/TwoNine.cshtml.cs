@@ -107,17 +107,12 @@ namespace form.Pages
             var updateCmd = connection.CreateCommand();
             updateCmd.CommandText = @"
         UPDATE Formularios SET
-            ArchivoNombre = $nombre,
-            ArchivoRuta = $ruta,
-            ArchivoExtension = $ext
+        ArchivoNombre = $nombre
         WHERE Id = $id;
     ";
 
             updateCmd.Parameters.AddWithValue("$id", formularioId);
             updateCmd.Parameters.AddWithValue("$nombre", safeFileName);
-            updateCmd.Parameters.AddWithValue("$ruta", filePath);
-            updateCmd.Parameters.AddWithValue("$ext", ext);
-
             updateCmd.ExecuteNonQuery();
 
             return Page();

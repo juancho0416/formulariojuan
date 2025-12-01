@@ -1,16 +1,26 @@
 using System.ComponentModel.DataAnnotations;
-using System.IO;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.AspNetCore.Http;
+using System;
+using System.IO;
+using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.Data.Sqlite;
 
 namespace form.Pages;
 
 public class ThirdModel : PageModel
 {
+    private readonly EmailService _emailService;
     private readonly IWebHostEnvironment _env;
-    public ThirdModel(IWebHostEnvironment env) => _env = env;
 
+    // Constructor con inyección de dependencias
+    public ThirdModel(IWebHostEnvironment env, EmailService emailService)
+    {
+        _env = env;
+        _emailService = emailService;
+    }
     // propiedades que usa la vista
     //Seleccion de fecha
     public string? Fecha { get; set; }
@@ -80,14 +90,6 @@ public class ThirdModel : PageModel
         Parrafo = TempData["Parrafo"]?.ToString();
 
         Fecha = TempData["Fecha"]?.ToString();
-
-
-
-
-
-
-
-
         // Prioriza el querystring, si no existe usa TempData (por si viniste desde TwoNine)
         Archivo = !string.IsNullOrWhiteSpace(uploadedFile) ? uploadedFile : TempData["UploadedFile"] as string;
         UploadMessage = !string.IsNullOrWhiteSpace(message) ? message : TempData["UploadMessage"] as string;
@@ -120,26 +122,60 @@ public class ThirdModel : PageModel
         TempData["UploadMessage"] = UploadMessage;
     }
 
-    // opcional: manejar POST de confirmación
-    public IActionResult OnPostConfirm()
+    // onpost para mandar notificacion de formulario completado con exito
+    public async Task<IActionResult> OnPostConfirm()
     {
-        // ...acción de confirmación...
-        return RedirectToPage("/Index");
+        string correo = HttpContext.Session.GetString("correo") ?? string.Empty;
+        if (string.IsNullOrEmpty(correo))
+        {
+            ModelState.AddModelError(string.Empty, "No se pudo identificar el usuario. Inicia sesión nuevamente.");
+            return Page();
+        }
+
+        using var connection = new SqliteConnection("Data Source=usuarios.db");
+        connection.Open(); // ¡No olvides abrir la conexión!
+
+        // Traer los datos del formulario más reciente de ese usuario
+        var getDataCmd = connection.CreateCommand();
+        getDataCmd.CommandText = @"
+        SELECT Id, Nombre, Empresa, RFC, Fecha
+        FROM Formularios
+        WHERE Correo = $correo
+        ORDER BY Id DESC
+        LIMIT 1;
+    ";
+        getDataCmd.Parameters.AddWithValue("$correo", correo);
+
+        using var reader = getDataCmd.ExecuteReader();
+        if (!reader.Read())
+        {
+            ModelState.AddModelError(string.Empty, "No se encontró un formulario para este usuario.");
+            return Page();
+        }
+
+        int formularioId = reader.GetInt32(0);
+        string nombre = reader.GetString(1);
+        string empresa = reader.GetString(2);
+        string rfc = reader.GetString(3);
+        string fecha = reader.GetString(4);
+
+        // contenido del correo
+        string correoDestino = correo;
+        string asunto = "Formulario enviado correctamente ";
+        string htmlContenido = $@"
+        
+        <h2>Formulario enviado</h2>
+        <p>Hola {nombre},</p>
+        <p>Tu formulario se ha recibido con éxito el día {fecha}.</p>
+        <p>Empresa: {empresa}</p>
+        <p>RFC: {rfc}</p>
+        
+    ";
+        await _emailService.EnviarCorreoGenerico(correoDestino, asunto, htmlContenido);
+        return RedirectToPage("/Fourth");
     }
-
-
-
-
-
-
-
-
-
-
     public IActionResult OnPost()
     {
-        //fecha
-
         //primera parte del formulario
         Nombre = TempData["Nombre"]?.ToString();
         RFC = TempData["RFC"]?.ToString();
@@ -163,7 +199,6 @@ public class ThirdModel : PageModel
         Parrafo = TempData["Parrafo"]?.ToString();
 
 
-        Fecha = TempData["Fecha"]?.ToString();
 
 
 
